@@ -27,3 +27,8 @@ require "lazy_setup"
 require "polish"
 
 vim.keymap.set("i", "jk", "<ESC>", { noremap = true, silent = true })
+
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4

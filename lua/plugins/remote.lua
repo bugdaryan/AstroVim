@@ -3,11 +3,19 @@
 ---@type LazySpec
 return {
   "hmk114/remote-nvim.nvim",
-  version = "*", -- Pin to GitHub releases
-  dependencies = {
-    "nvim-lua/plenary.nvim", -- For standard functions
-    "MunifTanjim/nui.nvim", -- To build the plugin UI
-    "nvim-telescope/telescope.nvim", -- For picking b/w different remote methods
+  version = "*",
+  opts = {
+    -- everything else can stay at its default
+    remote = {
+      -- optional but recommended so the remote gets all your plugins too
+      copy_dirs = {
+        data = { -- send the plugin manager cache
+          base = vim.fn.stdpath "data",
+          dirs = { "lazy" }, -- adjust if you use paq, packer, etc.
+          compression = { enabled = true },
+        },
+      },
+    },
   },
   config = true,
 }

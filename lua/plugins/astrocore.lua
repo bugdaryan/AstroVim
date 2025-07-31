@@ -73,6 +73,11 @@ return {
           desc = "Close buffer from tabline",
         },
 
+        -- ["<C-k>"] = { "o<Esc>j", desc = "Add line below" },
+        -- -- Add blank line *above* and stay in Normal
+        --
+        -- ["<C-j>"] = { "O<Esc>k", desc = "Add line above" },
+
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
         -- ["<Leader>b"] = { desc = "Buffers" },
