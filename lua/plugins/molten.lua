@@ -1,3 +1,5 @@
+if true then return {} end -- disabled: revisit later; iron.nvim re-enabled for now
+
 -- Jupyter-kernel-based REPL for Python with inline image output.
 -- Requires (in the Python env you `:MoltenInit` from):
 --   pip install pynvim jupyter_client ipykernel cairosvg pnglatex pyperclip nbformat
