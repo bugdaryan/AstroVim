@@ -1,3 +1,5 @@
+if true then return {} end -- disabled: replaced by molten-nvim (see molten.lua)
+
 ---@type LazySpec
 return {
   "hkupty/iron.nvim",
