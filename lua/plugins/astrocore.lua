@@ -85,6 +85,10 @@ return {
 
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
+
+        -- Free up <Leader>o (default: "Focus File Explorer") so it can be used
+        -- as the Obsidian prefix. <Leader>e still toggles the explorer.
+        ["<Leader>o"] = false,
       },
     },
   },

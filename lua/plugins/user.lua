@@ -29,6 +29,22 @@ return {
           }, "\n"),
         },
       },
+      -- Inline image rendering in markdown buffers (kitty graphics protocol).
+      -- Requires ImageMagick (`magick` binary). If running inside tmux,
+      -- add `set -g allow-passthrough on` to ~/.tmux.conf and reload tmux.
+      image = {
+        enabled = true,
+        doc = {
+          enabled = true,     -- auto-render image links/embeds in markdown
+          inline = true,      -- show inline next to the link
+          float = true,       -- also allow floating preview
+          max_width = 60,
+          max_height = 30,
+        },
+        convert = {
+          notify = true,      -- notify on conversion errors
+        },
+      },
     },
   },
   -- You can disable default plugins as follows:

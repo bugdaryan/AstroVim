@@ -12,7 +12,7 @@ return {
         -- install language servers
         "lua-language-server",
         "pyright", -- main Python LSP
-        "ruff-lsp", -- fast linter / formatter (optional)
+        "ruff", -- fast linter / formatter (replaces deprecated ruff-lsp)
 
         -- install formatters
         "stylua",
