@@ -1,7 +1,10 @@
 -- Obsidian integration: edit your vault from Neovim without opening the Obsidian app.
 -- Vault: ~/Documents/Obsidian (change `path` under `workspaces` if you move it).
 
-local VAULT = "~/Documents/Obsidian"
+-- Vault path: override per-machine with `export OBSIDIAN_VAULT=/path/to/vault`.
+local VAULT = os.getenv("OBSIDIAN_VAULT") or "~/Documents/Obsidian"
+local VAULT_ABS = vim.fn.expand(VAULT)
+local VAULT_EXISTS = vim.fn.isdirectory(VAULT_ABS) == 1
 
 -- Return `to` expressed as a relative path from directory `from_dir`.
 -- e.g. relpath("/v/20 Permanent", "/v/assets/imgs/x.png") -> "../assets/imgs/x.png"
@@ -72,7 +75,15 @@ return {
     "epwalsh/obsidian.nvim",
     version = "*",
     lazy = true,
-    ft = "markdown",
+    -- Skip the plugin entirely when the vault directory is missing.
+    -- This makes the config portable: on machines without the vault,
+    -- obsidian.nvim simply isn't loaded and the <Leader>o keymaps stay unbound.
+    cond = function() return VAULT_EXISTS end,
+    -- Only load when entering a buffer inside the vault, not for every markdown file.
+    event = {
+      "BufReadPre " .. VAULT_ABS .. "/*.md",
+      "BufNewFile " .. VAULT_ABS .. "/*.md",
+    },
     cmd = {
       "ObsidianNew",
       "ObsidianOpen",
