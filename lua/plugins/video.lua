@@ -1,50 +1,56 @@
--- Video playback via mpv + Kitty graphics protocol.
--- Uses `:!` to hand mpv the real terminal — Neovim's :terminal buffer
--- does NOT passthrough Kitty's graphics protocol, so playing "inside" a
--- nvim window doesn't work. Instead we suspend the UI, mpv takes over
--- the Kitty window, and on `q` we redraw.
+-- Video playback via mpv.
 --
--- Provides :Video and a BufReadCmd autocmd so opening a video file from
--- neo-tree / a picker just plays it.
+-- Why not `:!mpv` inline? Neovim's :! doesn't give mpv a clean terminal
+-- for Kitty's startup capability query, so mpv exits immediately.
+-- Why not :terminal? Neovim's terminal buffer doesn't passthrough
+-- Kitty's graphics protocol.
 --
--- Requires: kitty (local), mpv (on whichever host nvim is running on).
--- Inside tmux: set `allow-passthrough on` in ~/.tmux.conf.
+-- So: spawn mpv detached. Locally that means a new Kitty window
+-- (`kitty mpv ...`). Over SSH there is no local kitty to spawn, so we
+-- fall back to a foreground :! and hope the terminal cooperates.
+
+local video_exts = {
+  mp4 = true, mkv = true, webm = true, mov = true, avi = true,
+  flv = true, wmv = true, m4v = true, mpg = true, mpeg = true,
+  ["3gp"] = true, ogv = true, ts = true,
+}
+
+local function is_ssh()
+  return vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_CLIENT ~= nil
+end
+
+local function play(file)
+  file = vim.fn.fnamemodify(vim.fn.expand(file), ":p")
+  if vim.fn.filereadable(file) == 0 then
+    vim.notify("Video not found: " .. file, vim.log.levels.ERROR)
+    return
+  end
+
+  if not is_ssh() and vim.fn.executable("kitty") == 1 then
+    vim.fn.jobstart({ "kitty", "mpv", file }, { detach = true })
+    return
+  end
+
+  -- SSH fallback: foreground :! with --vo=kitty.
+  vim.cmd("!mpv --vo=kitty " .. vim.fn.shellescape(file))
+  vim.cmd("redraw!")
+end
+
+vim.api.nvim_create_user_command("Video", function(o) play(o.args) end, {
+  nargs = 1,
+  complete = function(arg) return vim.fn.getcompletion(arg, "file") end,
+  desc = "Play video with mpv (new kitty window locally, :! over SSH)",
+})
+
+vim.api.nvim_create_autocmd("BufReadCmd", {
+  pattern = vim.tbl_map(function(e) return "*." .. e end, vim.tbl_keys(video_exts)),
+  callback = function(ev)
+    vim.schedule(function()
+      vim.api.nvim_buf_delete(ev.buf, { force = true })
+      play(ev.file)
+    end)
+  end,
+})
 
 ---@type LazySpec
-return {
-  "folke/lazy.nvim",
-  init = function()
-    local video_exts = {
-      mp4 = true, mkv = true, webm = true, mov = true, avi = true,
-      flv = true, wmv = true, m4v = true, mpg = true, mpeg = true,
-      ["3gp"] = true, ogv = true, ts = true,
-    }
-
-    local function play(file)
-      file = vim.fn.fnamemodify(vim.fn.expand(file), ":p")
-      if vim.fn.filereadable(file) == 0 then
-        vim.notify("Video not found: " .. file, vim.log.levels.ERROR)
-        return
-      end
-      -- `:!` suspends nvim and gives mpv the real TTY (Kitty), so
-      -- --vo=kitty graphics escapes reach the terminal.
-      vim.cmd("silent !mpv --vo=kitty " .. vim.fn.shellescape(file))
-      vim.cmd("redraw!")
-    end
-
-    local function complete(arg) return vim.fn.getcompletion(arg, "file") end
-
-    vim.api.nvim_create_user_command("Video", function(o) play(o.args) end,
-      { nargs = 1, complete = complete, desc = "Play video with mpv + kitty" })
-
-    vim.api.nvim_create_autocmd("BufReadCmd", {
-      pattern = vim.tbl_map(function(e) return "*." .. e end, vim.tbl_keys(video_exts)),
-      callback = function(ev)
-        vim.schedule(function()
-          vim.api.nvim_buf_delete(ev.buf, { force = true })
-          play(ev.file)
-        end)
-      end,
-    })
-  end,
-}
+return {}
